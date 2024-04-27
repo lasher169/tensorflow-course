@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 import requests
 import shutil
-import io
+from tensorflow.keras.layers import TextVectorization
 
 
 training_zip_url = "https://storage.googleapis.com/tensorflow-1-public/course3/sarcasm.json"
@@ -67,33 +67,46 @@ for item in datastore:
     labels.append(item['is_sarcastic'])
     urls.append(item['article_link'])
 
-from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
+sentences = [sentence.replace('-', ' ') for sentence in sentences]
+
+sentence = list(set(sentences))
+
+# print(sentences)
+
+
 # Initialize the Tokenizer class
-tokenizer = Tokenizer(oov_token="<OOV>")
+vectorized = TextVectorization( output_mode='int', output_sequence_length=10, split='whitespace', encoding='utf-8')
 
 # Generate the word index dictionary
-tokenizer.fit_on_texts(sentences)
+vectorized.adapt(sentences)
+
+# Vectorize a batch of sentences
+vectorized_sentences = vectorized(sentences)
 
 # Print the length of the word index
-word_index = tokenizer.word_index
+# word_index = tokenizer.word_index
+vocabulary = vectorized.get_vocabulary()
+
+# print(vocabulary)
+
+word_index = {word: index for index, word in enumerate(vocabulary)}
 print(f'number of words in word_index: {len(word_index)}')
 
 # Print the word index
-# print(f'word_index: {word_index}')
-# print()
-for word, index in word_index.items():
-    print(f"{word}: {index}")
+print(f'word_index: {word_index}')
+print()
+# for word, index in word_index.items():
+#     print(f"{word}: {index}")
 
 # Generate and pad the sequences
-sequences = tokenizer.texts_to_sequences(sentences)
-padded = pad_sequences(sequences, padding='post')
+
 
 # Print a sample headline
 index = 2
 print(f'sample headline: {sentences[index]}')
-print(f'padded sequence: {padded[index]}')
+print(f'padded sequence: {vectorized_sentences[index]}')
 print()
 
 # Print dimensions of padded sequences
