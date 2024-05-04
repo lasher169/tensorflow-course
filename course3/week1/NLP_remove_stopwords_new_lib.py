@@ -144,7 +144,7 @@ print(vocabulary)
 # Vectorize a batch of sentences
 vectorized_sentences = vectorizer(sentences)
 
-word_index = {word: index for index, word in enumerate(vocabulary)}
+word_index = {index: word for index, word in enumerate(vocabulary)}
 
 print(f"Vocabulary contains {len(word_index)} words\n")
 

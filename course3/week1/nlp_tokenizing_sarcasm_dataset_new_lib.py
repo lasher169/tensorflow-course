@@ -77,7 +77,7 @@ sentence = list(set(sentences))
 
 
 # Initialize the Tokenizer class
-vectorized = TextVectorization( output_mode='int', output_sequence_length=10, split='whitespace', encoding='utf-8')
+vectorized = TextVectorization( output_mode='int', output_sequence_length=40, split='whitespace', encoding='utf-8')
 
 # Generate the word index dictionary
 vectorized.adapt(sentences)
@@ -91,7 +91,7 @@ vocabulary = vectorized.get_vocabulary()
 
 # print(vocabulary)
 
-word_index = {word: index for index, word in enumerate(vocabulary)}
+word_index = {index: word for index, word in enumerate(vocabulary)}
 print(f'number of words in word_index: {len(word_index)}')
 
 # Print the word index

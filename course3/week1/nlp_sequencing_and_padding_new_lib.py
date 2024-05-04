@@ -26,7 +26,7 @@ print("Vocabulary:")
 vocabulary = vectorizer.get_vocabulary()
 print(vocabulary)
 
-word_index = {word: index for index, word in enumerate(vocabulary)}
+word_index = {index: word for index, word in enumerate(vocabulary)}
 
 print("Word Index:")
 print(word_index)
