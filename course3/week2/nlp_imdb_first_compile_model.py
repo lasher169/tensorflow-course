@@ -65,6 +65,9 @@ word_index = tokenizer.word_index
 sequences = tokenizer.texts_to_sequences(training_sentences)
 padded = pad_sequences(sequences,maxlen=max_length, truncating=trunc_type)
 
+tokenizer.sequences_to_texts(padded)
+
+
 # Generate and pad the test sequences
 testing_sequences = tokenizer.texts_to_sequences(testing_sentences)
 testing_padded = pad_sequences(testing_sequences,maxlen=max_length, truncating=trunc_type)
@@ -101,6 +104,8 @@ print(embedding_weights.shape)
 
 # Get the index-word dictionary
 reverse_word_index = tokenizer.index_word
+
+print(reverse_word_index)
 
 import io
 

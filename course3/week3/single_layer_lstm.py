@@ -1,4 +1,7 @@
 import tensorflow_datasets as tfds
+import tensorflow as tf
+
+# tf.config.set_visible_devices([], "GPU")
 
 # Download the subword encoded pretokenized dataset
 dataset, info = tfds.load('imdb_reviews/subwords8k', with_info=True, as_supervised=True)
@@ -19,6 +22,7 @@ train_dataset = train_data.shuffle(BUFFER_SIZE)
 
 # Batch and pad the datasets to the maximum length of the sequences
 train_dataset = train_dataset.padded_batch(BATCH_SIZE)
+
 test_dataset = test_data.padded_batch(BATCH_SIZE)
 
 import tensorflow as tf
@@ -41,12 +45,20 @@ model = tf.keras.Sequential([
 # Print the model summary
 model.summary()
 
+from tensorflow.keras.optimizers.legacy import Adam
+
 # Set the training parameters
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(
+    loss='binary_crossentropy',
+    optimizer=Adam(learning_rate=0.001),
+    metrics=['accuracy'])
 
 NUM_EPOCHS = 10
 
-history = model.fit(train_dataset, epochs=NUM_EPOCHS, validation_data=test_dataset)
+history = model.fit(
+    train_dataset,
+    epochs=NUM_EPOCHS,
+    validation_data=test_dataset)
 
 import matplotlib.pyplot as plt
 
