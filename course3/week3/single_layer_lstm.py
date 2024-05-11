@@ -12,7 +12,7 @@ print('what is info ==',info)
 tokenizer = info.features['text'].encoder
 
 BUFFER_SIZE = 10000
-BATCH_SIZE = 256
+BATCH_SIZE = 128
 
 # Get the train and test splits
 train_data, test_data = dataset['train'], dataset['test'],
@@ -30,9 +30,13 @@ import tensorflow as tf
 # tf.config.set_visible_devices([], "GPU")
 
 # Hyperparameters
-embedding_dim = 64
-lstm_dim = 64
-dense_dim = 64
+# embedding_dim = 64
+# lstm_dim = 64
+# dense_dim = 64
+
+embedding_dim = 16
+lstm_dim = 32
+dense_dim = 6
 
 # Build the model
 model = tf.keras.Sequential([

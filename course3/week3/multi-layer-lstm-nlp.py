@@ -85,7 +85,13 @@ model = tf.keras.Sequential([
 model.summary()
 
 # Set the training parameters
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+from tensorflow.keras.optimizers.legacy import Adam
+
+model.compile(
+    loss='binary_crossentropy',
+    optimizer=Adam(learning_rate=0.001),
+    metrics=['accuracy'])
 
 NUM_EPOCHS = 10
 

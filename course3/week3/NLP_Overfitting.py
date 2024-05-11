@@ -2,15 +2,16 @@
 
 import csv
 import random
-import pickle
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
-from scipy.stats import linregress
 import zipfile
 import io
+import requests
+import os
+import shutil
 
 # grader-required-cell
 
@@ -24,13 +25,43 @@ TRAINING_SPLIT = 0.9
 
 # grader-required-cell
 
-SENTIMENT_ZIP = "./data/training_cleaned.zip"
+zip_url = "https://drive.usercontent.google.com/download?id=1p_4fA2RAwrkdasgMoeZBGDsgWLNG3PK7&export=download&authuser=1&confirm=t"
 
 SENTIMENT_CSV = "./data/training_cleaned.csv"
 
-with zipfile.ZipFile(SENTIMENT_ZIP, 'r') as zip_ref:
-    # Extract all contents to a directory
-    zip_ref.extractall("./data")
+tf.config.set_visible_devices([], 'GPU')
+
+dst = "data/"
+
+def cleanup(extracted_dst):
+    if os.path.exists(extracted_dst):
+        shutil.rmtree(extracted_dst)
+        print(extracted_dst + " deleted")
+
+cleanup(dst)
+
+
+# Define a function to download and extract the zip file
+def fetch_and_extract_zip(zip_url, dst, filename):
+    # Send a GET request to the URL
+    response = requests.get(zip_url)
+
+    # Check if request was successful (status code 200)
+    if response.status_code == 200:
+        # Unzip the dataset
+        file_content = response.content
+        # Create the folder if it doesn't exist
+        os.makedirs(dst, exist_ok=True)
+
+        # Save the file to a local file
+        # Save the file to the specified folder
+        with open(os.path.join(dst, filename), 'wb') as f:
+            f.write(file_content)
+        print("File downloaded successfully.")
+    else:
+        print("Failed to download the file.")
+
+fetch_and_extract_zip(zip_url, dst, 'training_cleaned.csv')
 
 with open(SENTIMENT_CSV, 'r') as csvfile:
     print(f"First data point looks like this:\n\n{csvfile.readline()}")
@@ -236,12 +267,10 @@ val_labels = np.array(val_labels)
 # grader-required-cell
 
 # Define path to file containing the embeddings
-GLOVE_ZIP_FILE = './data/glove.6B.100d.zip'
+GLOVE_URL = 'https://drive.usercontent.google.com/download?id=1wf3VDxmOZktPzXwB3sG0YdVsk1eSPwXJ&export=download&authuser=1&confirm=t'
 GLOVE_FILE = './data/glove.6B.100d.txt'
 
-with zipfile.ZipFile(GLOVE_ZIP_FILE, 'r') as zip_ref:
-    # Extract all contents to a directory
-    zip_ref.extractall("./data")
+fetch_and_extract_zip(GLOVE_URL, dst, 'glove.6B.100d.txt')
 
 # Initialize an empty embeddings index dictionary
 GLOVE_EMBEDDINGS = {}
@@ -311,7 +340,7 @@ def create_model(vocab_size, embedding_dim, maxlen, embeddings_matrix):
         # tf.keras.layers.LSTM(units=lstm_dim),
 
         # LSTM bi-directional --this is good... val loss does not go up even line
-        # tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(lstm_dim)),
+        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(lstm_dim)),
 
         # LSTM RNN -- ok not as good as bi-directional bit flaky at end
         # tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(lstm1_dim, return_sequences=True)),
