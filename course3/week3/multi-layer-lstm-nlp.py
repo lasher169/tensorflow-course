@@ -90,7 +90,7 @@ from tensorflow.keras.optimizers.legacy import Adam
 
 model.compile(
     loss='binary_crossentropy',
-    optimizer=Adam(learning_rate=0.001),
+    optimizer=Adam(learning_rate=0.0001),
     metrics=['accuracy'])
 
 NUM_EPOCHS = 10
