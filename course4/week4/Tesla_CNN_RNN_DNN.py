@@ -12,10 +12,15 @@ import yfinance
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-time_zone = 'America/New_York'  # EST
+
+timezone = pytz.timezone('America/New_York')
 
 # Get the current time
-current_time = datetime.datetime.now(pytz.timezone('America/New_York'))
+# current_time = datetime.datetime.now(pytz.timezone('America/New_York'))
+
+naive_datetime = datetime.datetime(2024, 5, 13, 0, 0, 0)
+
+current_time = timezone.localize(naive_datetime)
 
 start_time = current_time - relativedelta(years=+5)
 
@@ -135,7 +140,7 @@ def plot_series(x, y, format="-", start=0, end=None,
     plt.show()
 
 # Preview the data
-plot_series(time, series, xlabel='Month', ylabel='Closing Share Price')
+# plot_series(time, series, xlabel='Month', ylabel='Closing Share Price')
 
 ############################split dataset ###########################################
 
@@ -178,10 +183,12 @@ def windowed_dataset(series, window_size, batch_size, shuffle_buffer):
     dataset = dataset.map(lambda window: (window[:-1], window[-1]))
 
     # Shuffle the windows
-    dataset = dataset.shuffle(shuffle_buffer)
+    # dataset = dataset.shuffle(shuffle_buffer)
 
     # Create batches of windows
     dataset = dataset.batch(batch_size).prefetch(1)
+    # dataset = dataset.batch(2).prefetch(1)
+
 
     return dataset
 
@@ -192,7 +199,14 @@ shuffle_buffer_size = 1000
 
 # Generate the dataset windows
 train_set = windowed_dataset(x_train, window_size, batch_size, shuffle_buffer_size)
+# train_set = windowed_dataset(x_train[:10], 5, batch_size, 10)
 
+for x, y in train_set:
+    print("x = ", x.numpy())
+    print("y = ", y.numpy())
+    print()
+
+print("pause")
 ############################learning rate training ###########################################
 
 # Build the model
@@ -210,7 +224,7 @@ lr_schedule = tf.keras.callbacks.LearningRateScheduler(
     lambda epoch: 1e-8 * 10**(epoch / 20))
 
 # Initialize the optimizer
-optimizer = tf.keras.optimizers.SGD(momentum=0.9)
+optimizer = tf.keras.optimizers.legacy.SGD(momentum=0.9)
 
 # Set the training parameters
 model.compile(loss=tf.keras.losses.Huber(), optimizer=optimizer)
@@ -250,10 +264,10 @@ model = tf.keras.models.Sequential([
 ])
 
 # Set the learning rate
-learning_rate = 2e-5
+learning_rate = 2e-6
 
 # Set the optimizer
-optimizer = tf.keras.optimizers.SGD(learning_rate=learning_rate, momentum=0.9)
+optimizer = tf.keras.optimizers.legacy.SGD(learning_rate=learning_rate, momentum=0.9)
 
 # Set the training parameters
 model.compile(loss=tf.keras.losses.Huber(),
@@ -303,8 +317,36 @@ forecast = model_forecast(model, forecast_series, window_size, batch_size)
 results = forecast.squeeze()
 
 # Plot the results
+# plot_series(time_valid, (x_valid, results))
 plot_series(time_valid, (x_valid, results))
 
 # Compute the MAE
-print(tf.keras.metrics.mean_absolute_error(x_valid, results).numpy())
+print("final MAE",tf.keras.metrics.mean_absolute_error(x_valid, results).numpy())
+
+
+def future_forecast(model, last_window, steps_ahead):
+    """Generates future predictions based on the last observed window."""
+    future_predictions = []
+    current_window = last_window
+
+    for _ in range(steps_ahead):
+        # Reshape window to fit model input
+        input_data = np.expand_dims(current_window, axis=0)
+        next_prediction = model.predict(input_data)
+        next_value = next_prediction[0]
+        future_predictions.append(next_value)
+
+        # Update the window
+        current_window = np.roll(current_window, -1)
+        current_window[-1] = next_value
+
+    return np.array(future_predictions)
+
+last_window = series[-window_size:]
+
+steps_ahead = 4
+
+future_predictions = future_forecast(model, last_window, steps_ahead)
+
+print(future_predictions)
 

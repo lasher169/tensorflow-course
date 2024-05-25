@@ -294,7 +294,7 @@ def model_forecast(model, series, window_size, batch_size):
     return forecast
 
 # Reduce the original series
-forecast_series = series[split_time-window_size:-1]
+forecast_series = series[split_time - window_size:-1]
 
 # Use helper function to generate predictions
 forecast = model_forecast(model, forecast_series, window_size, batch_size)
